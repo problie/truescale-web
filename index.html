@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
+    <!-- PWA iOS Specific Display Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TrueScale">
     
+    <!-- Ultra High-Intent SEO Meta Configuration -->
     <title>Actual Size Online Ruler & Millimeter Screen Caliper — TrueScale™</title>
     <meta name="description" content="An absolutely calibrated, true-to-size online ruler and digital screen caliper. Measure physical objects on your phone or desktop screen instantly in cm, mm, and inches.">
     <meta name="keywords" content="online ruler, actual size ruler, mm ruler screen, cm ruler mobile, screen caliper, true size measuring, desktop caliper tool, digital caliper online, inch ruler display">
     <meta name="author" content="TrueScale Engineering">
     <link rel="canonical" href="https://www.truescalecaliper.com/">
+
+    <!-- INLINE VECTOR FAVICON (Dark Tile with Precision Ruler Ticks) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%2309090b'/%3E%3Cpath d='M22 26h56v8H22zm0 20h36v8H22zm0 20h48v8H22z' fill='%2338bdf8'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%2309090b'/%3E%3Cpath d='M22 26h56v8H22zm0 20h36v8H22zm0 20h48v8H22z' fill='%2338bdf8'/%3E%3C/svg%3E">
     
+    <!-- Base64 PWA Manifest -->
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVHJ1ZVNjYWxlIFdvcmtiZW5jaCIsInNob3J0X25hbWUiOiJUcnVlU2NhbGUiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiJ9">
 
+    <!-- SCHEMA 1: Software Application Snippet -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -37,6 +45,7 @@
     }
     </script>
 
+    <!-- SCHEMA 2: Rich FAQ Snippets -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -223,10 +232,12 @@
 </head>
 <body>
 
+    <!-- SIDE REFERENCE SPINE LAYER -->
     <div id="spine-container">
         <svg id="ruler-svg" width="100%" height="4000px"></svg>
     </div>
 
+    <!-- MAIN INTERACTIVE WORKSPACE -->
     <main id="workspace">
         <header>
             <div class="header-title">
@@ -242,6 +253,7 @@
 
         <div class="workbench-grid">
             
+            <!-- PARAMETER MODULATION DRAWER -->
             <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
                 <div class="card" id="interactive-core">
                     <div class="step-label">1. Choose Physical Reference</div>
@@ -284,6 +296,7 @@
                 <button class="btn-action" id="lock-btn">🔒 Lock Calibration Parameters</button>
             </div>
 
+            <!-- PRECISION CALIPER HUB -->
             <div class="card caliper-card">
                 <div>
                     <div class="step-label">Precision Digital Caliper Stage</div>
@@ -307,7 +320,10 @@
                 </div>
             </div>
 
-        </div> <article class="seo-article">
+        </div> <!-- END CONTAINER GRID -->
+
+        <!-- COMPLETE USER GUIDE ARTICLE -->
+        <article class="seo-article">
             <h2>Complete Guide: How to Use the TrueScale™ Actual Size Online Ruler</h2>
             <p>Standard online web rulers fail because modern operating systems apply automatic display scaling (e.g., 125% zoom on Windows laptops or Retina scaling on MacBooks). This lies to your web browser about the physical pixel pitch of your glass panel. TrueScale overrides OS scaling via manual real-world baseline calibration.</p>
             
@@ -320,6 +336,7 @@
             </ol>
         </article>
 
+        <!-- FAQ SECTION -->
         <section class="seo-article">
             <h2>Frequently Asked Questions</h2>
             <div class="faq-container">
@@ -338,6 +355,7 @@
             </div>
         </section>
 
+        <!-- LEGAL FOOTER -->
         <footer>
             <nav class="footer-nav">
                 <a onclick="openSubpage('about', 'About TrueScale™ Engine')">About Tool</a>
@@ -350,11 +368,16 @@
         </footer>
     </main>
 
+    <!-- HIDDEN SUB-PAGE TAKEOVER WRAPPER -->
     <div id="subpage-view">
         <button class="back-nav-btn" onclick="closeSubpage()">← Back to Ruler Workbench</button>
         <h2 id="subpage-title">Page Title</h2>
         <div id="subpage-body" class="subpage-body-content"></div>
     </div>
+
+    <!-- ========================================== -->
+    <!-- HIDDEN HTML TEMPLATES FOR VIRTUAL ROUTER   -->
+    <!-- ========================================== -->
 
     <template id="tpl-about">
         <p>TrueScale™ was engineered out of frustration with static web rulers. Traditional online measuring tools attempt to guess your screen size by reading your browser's reported resolution. However, because modern High-DPI screens apply arbitrary OS-level display scaling (e.g., 125%, 150%, or Apple's Retina scaling), reported resolutions are completely false.</p>
@@ -473,7 +496,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- CORRECTED CONTACT DISPATCH ROUTINE ---
         function handleContactSubmit(e) {
             e.preventDefault();
             const form = e.target;
