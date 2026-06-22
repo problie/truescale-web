@@ -779,19 +779,6 @@
         }
 
         initAppLifecycle();
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swBlob = new Blob([
-                    `const CACHE_NAME = 'truescale-v1';
-                     self.addEventListener('install', e => self.skipWaiting());
-                     self.addEventListener('activate', e => e.waitUntil(clients.claim()));
-                     self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));`
-                ], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(swBlob);
-                navigator.serviceWorker.register(swUrl, { scope: './' }).catch(err => console.log("PWA SW Register Skipped"));
-            });
-        }
     </script>
 </body>
 </html>
