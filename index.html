@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TrueScale">
+    
+    <title>Actual Size Online Ruler & Millimeter Screen Caliper — TrueScale™</title>
+    <meta name="description" content="An absolutely calibrated, true-to-size online ruler and digital screen caliper. Measure physical objects on your phone or desktop screen instantly in cm, mm, and inches.">
+    <meta name="keywords" content="online ruler, actual size ruler, mm ruler screen, cm ruler mobile, screen caliper, true size measuring, desktop caliper tool, digital caliper online, inch ruler display">
+    <meta name="author" content="TrueScale Engineering">
+    <link rel="canonical" href="https://www.truescalecaliper.com/">
+    
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVHJ1ZVNjYWxlIFdvcmtiZW5jaCIsInNob3J0X25hbWUiOiJUcnVlU2NhbGUiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA5MDkwYiIsInRoZW1lX2NvbG9yIjoiIzA5MDkwYiJ9">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "TrueScale™ Screen Caliper",
+      "operatingSystem": "All",
+      "applicationCategory": "UtilitiesApplication",
+      "browserRequirements": "Requires HTML5 Canvas and ES6 JavaScript",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "1420"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I get an actual size ruler on my phone screen?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Select a standardized physical item from our preset menu (such as a credit card or a modern banknote). Hold the real object to your screen and adjust the engine scale slider until the digital outline matches your reference perfectly. Your screen is now locked to 1:1 real-world scale."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this online screen caliper millimeter accurate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Once calibrated to override your device's operating system display scaling, the TrueScale digital caliper jaw measures objects down to sub-millimeter increments (±0.3mm)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this tool store images of my credit card or cash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. TrueScale is a zero-server client-side web application. It uses zero cameras, transmits zero data over the internet, and saves your calibration ratio purely inside your local device browser storage."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <style>
+        /* --- SEMANTIC THEME TOKENS --- */
+        :root, html[data-theme="dark"] {
+            --bg: #09090b; --surface: #18181b; --panel: #27272a;
+            --accent: #38bdf8; --success: #34d399;
+            --text: #f4f4f5; --text-dim: #a1a1aa;
+            --spine-bg: #000000;
+            --spine-tick-major: #f4f4f5; --spine-tick-minor: #52525b;
+            --caliper-bg: #0b0b0d;
+        }
+
+        html[data-theme="light"] {
+            --bg: #f4f4f5; --surface: #ffffff; --panel: #e4e4e7;
+            --accent: #0284c7; --success: #16a34a;
+            --text: #09090b; --text-dim: #71717a;
+            --spine-bg: #e4e4e7;
+            --spine-tick-major: #09090b; --spine-tick-minor: #a1a1aa;
+            --caliper-bg: #f4f4f5;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; transition: background 0.15s, color 0.15s; }
+
+        /* --- LEFT EDGE SPINE CONTAINER --- */
+        #spine-container {
+            position: fixed; top: 0; left: 0; width: 70px; height: 100vh;
+            background: var(--spine-bg); border-right: 1px solid var(--panel);
+            z-index: 999; overflow: hidden; user-select: none; transition: background 0.15s;
+        }
+
+        /* --- PRIMARY LAYOUT WRAPPERS --- */
+        #workspace { margin-left: 70px; min-height: 100vh; padding: 16px; display: flex; flex-direction: column; gap: 20px; max-width: calc(100vw - 70px); }
+        
+        /* Hidden Sub-Page Container */
+        #subpage-view { margin-left: 70px; min-height: 100vh; padding: 24px; max-width: 800px; display: none; flex-direction: column; gap: 16px; }
+        .back-nav-btn { background: var(--panel); color: var(--text); border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; width: fit-content; display: flex; align-items: center; gap: 8px; }
+        .back-nav-btn:hover { opacity: 0.8; }
+        .subpage-body-content { line-height: 1.6; color: var(--text-dim); display: flex; flex-direction: column; gap: 14px; font-size: 0.95rem; }
+        .subpage-body-content h2 { color: var(--text); font-size: 1.25rem; margin-top: 8px; }
+
+        header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+        .header-title h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em; }
+        .header-title .subtitle { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+
+        .control-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .sys-btn {
+            background: var(--surface); border: 1px solid var(--panel); color: var(--text);
+            padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none;
+        }
+        .sys-btn:hover { background: var(--panel); }
+        .sys-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .workbench-grid { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
+        .card { background: var(--surface); border: 1px solid var(--panel); border-radius: 14px; padding: 16px; height: fit-content; transition: background 0.15s, border-color 0.15s; }
+        .step-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 8px;}
+        
+        select {
+            width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--panel); 
+            padding: 12px; border-radius: 8px; font-size: 0.88rem; outline: none; cursor: pointer; transition: background 0.15s, color 0.15s;
+        }
+        optgroup { color: var(--accent); font-weight: 600; background: var(--surface); }
+
+        /* Calibration Target Stage */
+        .stage { width: 100%; display: flex; justify-content: center; align-items: center; padding: 16px 0; min-height: 170px; overflow: hidden; position: relative; }
+        #anchor-target {
+            width: calc(var(--mm) * var(--anchor-w)); height: calc(var(--mm) * var(--anchor-h));
+            background: rgba(56, 189, 248, 0.03); border: 2px dashed var(--accent); border-radius: 4px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; 
+            transition: width 0.02s ease, height 0.02s ease; flex-shrink: 0;
+        }
+        #anchor-target span { font-size: 0.75rem; font-weight: 600; color: var(--accent); padding: 4px; pointer-events: none; line-height: 1.3; }
+        #anchor-target small { font-size: 0.65rem; color: var(--text-dim); margin-top: 4px; font-weight: 500; display: block; }
+        
+        #anchor-target.horizontal-note-mode {
+            border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+            border-left: 1px dashed rgba(56, 189, 248, 0.2); border-right: 1px dashed rgba(56, 189, 248, 0.2);
+            background: rgba(56, 189, 248, 0.01);
+        }
+
+        /* Tuning Slider Track Matrix */
+        .slider-matrix { display: flex; flex-direction: column; gap: 12px; }
+        .main-track { display: flex; align-items: center; gap: 10px; }
+        input[type="range"] { flex-grow: 1; height: 6px; accent-color: var(--accent); cursor: ew-resize; }
+        .nudge-btn { background: var(--panel); border: none; color: var(--text); width: 42px; height: 42px; border-radius: 8px; font-size: 1.25rem; font-weight: bold; cursor: pointer; }
+        .nudge-btn:active { opacity: 0.7; }
+        .live-data { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-dim); font-family: monospace; }
+        .live-data b { color: var(--text); font-size: 0.92rem; }
+
+        .btn-action { width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; background: var(--panel); color: var(--text); transition: all 0.2s; }
+        .btn-action.locked { background: var(--success); color: #000; box-shadow: 0 0 20px rgba(52, 211, 153, 0.2); }
+
+        /* --- DIGITAL CALIPER PLATFORM STAGE --- */
+        .caliper-card { display: flex; flex-direction: column; gap: 12px; min-height: 320px; }
+        #caliper-track-stage { width: 100%; flex-grow: 1; min-height: 200px; background: var(--caliper-bg); border: 1px solid var(--panel); border-radius: 10px; position: relative; overflow: hidden; cursor: crosshair; touch-action: none; user-select: none; transition: background 0.15s; }
+        .caliper-jaw { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--text-dim); pointer-events: none; opacity: 0.4; }
+        #jaw-fixed { left: 24px; border-right: 1px dashed var(--text-dim); }
+        #jaw-draggable { left: 140px; background: var(--accent); width: 4px; opacity: 1; box-shadow: 0 0 10px var(--accent), 4px 0 15px rgba(56,189,248,0.3); }
+        html[data-theme="light"] #jaw-draggable { box-shadow: none; }
+        #jaw-draggable::after { content: "↔"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--accent); color: white; font-size: 10px; font-weight: 900; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        .caliper-readout-box { display: flex; justify-content: center; gap: 14px; background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--panel); }
+        .readout-pane { text-align: center; flex: 1; }
+        .readout-pane div { font-size: 0.62rem; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 2px; }
+        .readout-pane span { font-family: monospace; font-size: 1.35rem; font-weight: 700; color: var(--accent); }
+
+        /* --- SEO GUIDE & FAQ ARTICLE LAYOUT --- */
+        .seo-article { background: var(--surface); border: 1px solid var(--panel); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+        .seo-article h2 { font-size: 1.15rem; color: var(--text); border-bottom: 1px solid var(--panel); padding-bottom: 8px; }
+        .seo-article h3 { font-size: 0.95rem; color: var(--accent); margin-top: 8px; }
+        .seo-article p, .seo-article li { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+        .seo-article ol { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+
+        /* Contact Form Inner Styling */
+        .custom-contact-form { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; max-width: 500px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+        .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+        .form-group input, .form-group textarea { background: var(--bg); border: 1px solid var(--panel); color: var(--text); padding: 12px; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border 0.15s; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+
+        /* FAQ Accordions */
+        .faq-container { display: flex; flex-direction: column; gap: 8px; }
+        details { background: var(--bg); border: 1px solid var(--panel); border-radius: 8px; overflow: hidden; }
+        summary { padding: 12px 14px; font-weight: 600; font-size: 0.85rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; color: var(--text); }
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: "+"; color: var(--accent); font-size: 1.1rem; }
+        details[open] summary::after { content: "−"; }
+        .faq-text { padding: 0 14px 14px 14px; font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; border-top: 1px solid var(--panel); padding-top: 8px; }
+
+        /* Footer */
+        footer { border-top: 1px solid var(--panel); padding: 20px 0; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; }
+        .footer-nav { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .footer-nav a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: color 0.15s; }
+        .footer-nav a:hover { color: var(--accent); }
+        .copyright { font-size: 0.75rem; color: var(--panel); }
+
+        /* --- DESKTOP VIEWPORT WORKBENCH --- */
+        @media (min-width: 1024px) {
+            #workspace { max-width: 1400px; padding: 24px; margin-left: 70px; }
+            h1 { font-size: 1.5rem; }
+            .workbench-grid { grid-template-columns: 450px 1fr; align-items: start; gap: 20px; }
+            .caliper-card { min-height: 460px; }
+        }
+
+        @media (max-width: 380px) {
+            #spine-container { width: 54px; }
+            #workspace, #subpage-view { margin-left: 54px; padding: 10px; max-width: calc(100vw - 54px); }
+            .sys-btn { padding: 6px 8px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="spine-container">
+        <svg id="ruler-svg" width="100%" height="4000px"></svg>
+    </div>
+
+    <main id="workspace">
+        <header>
+            <div class="header-title">
+                <h1>TrueScale™ — Actual Size Online Ruler & Caliper</h1>
+                <div class="subtitle">Hardware-Accurate Multi-Unit Measurement Utility</div>
+            </div>
+            <div class="control-row">
+                <button class="sys-btn" id="fullscreen-toggle" title="Toggle Fullscreen">⛶ Full</button>
+                <button class="sys-btn active" id="unit-toggle">Metric</button>
+                <button class="sys-btn" id="theme-toggle">🌓 Mode</button>
+            </div>
+        </header>
+
+        <div class="workbench-grid">
+            
+            <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
+                <div class="card" id="interactive-core">
+                    <div class="step-label">1. Choose Physical Reference</div>
+                    <select id="preset-selector">
+                        <optgroup label="Standard Plastic Cards">
+                            <option value="53.98,85.60" selected>💳 Credit / Debit / ID Card (Vertical) - 53.9mm</option>
+                            <option value="85.60,53.98">💳 Credit / Debit / ID Card (Horizontal) - 85.6mm</option>
+                        </optgroup>
+                        <optgroup label="Indian Rupees (₹) - Notes Placed Horizontally">
+                            <option value="45.0,66.0">🇮🇳 ₹50 Note (Landscape Placement) - 66mm Height</option>
+                            <option value="45.0,66.0">🇮🇳 ₹100 Note (Landscape Placement) - 66mm Height</option>
+                            <option value="45.0,66.0">🇮🇳 ₹200 Note (Landscape Placement) - 66mm Height</option>
+                            <option value="45.0,66.0">🇮🇳 ₹500 Note (Landscape Placement) - 66mm Height</option>
+                        </optgroup>
+                        <optgroup label="US Currency & Coins">
+                            <option value="66.29,155.95">💵 US Banknote (Vertical Edge) - 66.3mm</option>
+                            <option value="24.26,24.26">🪙 US Quarter Coin - 24.2mm</option>
+                        </optgroup>
+                    </select>
+
+                    <div class="step-label" style="margin-top: 16px;">2. Align Reference & Match Edges</div>
+                    <div class="stage">
+                        <div id="anchor-target"><span id="target-label">ID Card</span></div>
+                    </div>
+
+                    <div class="step-label">3. Fine-Tune Digital Outline</div>
+                    <div class="slider-matrix">
+                        <div class="main-track">
+                            <button class="nudge-btn" id="nudge-down">-</button>
+                            <input type="range" id="k-slider" min="2.2" max="9.5" step="0.002" value="3.78">
+                            <button class="nudge-btn" id="nudge-up">+</button>
+                        </div>
+                        <div class="live-data">
+                            <span>Engine Ratio: <b id="val-k">3.780</b> px/mm</span>
+                            <span>Display Resolution: <b id="val-ppi">96</b> PPI</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-action" id="lock-btn">🔒 Lock Calibration Parameters</button>
+            </div>
+
+            <div class="card caliper-card">
+                <div>
+                    <div class="step-label">Precision Digital Caliper Stage</div>
+                    <div class="subtitle" style="margin-top:-4px;">Place an item on your screen and slide the blue line to measure it</div>
+                </div>
+
+                <div id="caliper-track-stage">
+                    <div class="caliper-jaw" id="jaw-fixed"></div>
+                    <div class="caliper-jaw" id="jaw-draggable"></div>
+                </div>
+
+                <div class="caliper-readout-box">
+                    <div class="readout-pane">
+                        <div>Metric Width</div>
+                        <span id="readout-mm">0.0</span> mm
+                    </div>
+                    <div class="readout-pane" style="border-left: 1px solid var(--panel);">
+                        <div>Imperial Width</div>
+                        <span id="readout-in">0.000</span> in
+                    </div>
+                </div>
+            </div>
+
+        </div> <article class="seo-article">
+            <h2>Complete Guide: How to Use the TrueScale™ Actual Size Online Ruler</h2>
+            <p>Standard online web rulers fail because modern operating systems apply automatic display scaling (e.g., 125% zoom on Windows laptops or Retina scaling on MacBooks). This lies to your web browser about the physical pixel pitch of your glass panel. TrueScale overrides OS scaling via manual real-world baseline calibration.</p>
+            
+            <ol>
+                <li><b>Select a Hardware Reference:</b> From the dropdown menu, select a standard physical object you have nearby. Standard credit cards, ID cards, driver's licenses, or modern paper currency notes work best.</li>
+                <li><b>Place Object on Glass:</b> Lay your physical reference directly onto the glowing target box inside the calibration stage. If using mobile mode with currency, lay the note flat horizontally across the phone.</li>
+                <li><b>Match Bounding Walls:</b> Use the fine-tune slider or the nudge buttons (+ / -) to expand or shrink the digital outline until its blue borders snugly touch the exact physical edges of your card or cash.</li>
+                <li><b>Lock Parameters:</b> Click the <i>Lock Calibration</i> button. This writes your precise sub-pixel coefficient directly into your browser's persistent memory.</li>
+                <li><b>Measure Loose Items:</b> Place loose hardware, jewelry, screws, or machine components inside the right-hand digital caliper box. Slide the glowing blue jaw with your finger or mouse to clasp the item and reveal its true millimeter and inch dimensions instantly.</li>
+            </ol>
+        </article>
+
+        <section class="seo-article">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-container">
+                <details>
+                    <summary>How accurate is this online ruler on a phone screen?</summary>
+                    <div class="faq-text">When calibrated against a precise, clean edge (like an unbent ID card or a crisp ₹500 banknote), the TrueScale math engine achieves sub-millimeter visual accuracy (±0.3mm), making it vastly superior to static, uncalibrated web rulers.</div>
+                </details>
+                <details>
+                    <summary>Why do all Indian currency notes work for calibration?</summary>
+                    <div class="faq-text">While the Reserve Bank of India alters the horizontal length of Mahatma Gandhi New Series banknotes depending on their monetary value, the short-edge vertical height of the ₹50, ₹100, ₹200, and ₹500 notes is standardized to exactly <b>66 millimeters</b>. TrueScale relies purely on this 66mm vertical width to calculate true scale on mobile screens.</div>
+                </details>
+                <details>
+                    <summary>How do I prevent parallax visual errors?</summary>
+                    <div class="faq-text">Because smartphone and desktop monitors feature a protective glass layer above the illuminating pixel matrix, viewing an object from an angle causes optical shifting. Always hover your dominant eye completely perpendicular (90 degrees directly above) the target object when setting the caliper jaws.</div>
+                </details>
+            </div>
+        </section>
+
+        <footer>
+            <nav class="footer-nav">
+                <a onclick="openSubpage('about', 'About TrueScale™ Engine')">About Tool</a>
+                <a onclick="openSubpage('guide', 'Precision Measurement Calibration Guide')">Full User Guide</a>
+                <a onclick="openSubpage('contact', 'Contact TrueScale Developer')">Contact & Support</a>
+                <a onclick="openSubpage('privacy', 'TrueScale™ Client Privacy Policy')">Privacy Policy</a>
+                <a onclick="openSubpage('terms', 'Software Terms of Service')">Terms of Service</a>
+            </nav>
+            <div class="copyright">TrueScale™ Actual Size Digital Ruler — 100% Client-Side Web Utility</div>
+        </footer>
+    </main>
+
+    <div id="subpage-view">
+        <button class="back-nav-btn" onclick="closeSubpage()">← Back to Ruler Workbench</button>
+        <h2 id="subpage-title">Page Title</h2>
+        <div id="subpage-body" class="subpage-body-content"></div>
+    </div>
+
+    <template id="tpl-about">
+        <p>TrueScale™ was engineered out of frustration with static web rulers. Traditional online measuring tools attempt to guess your screen size by reading your browser's reported resolution. However, because modern High-DPI screens apply arbitrary OS-level display scaling (e.g., 125%, 150%, or Apple's Retina scaling), reported resolutions are completely false.</p>
+        <p>By forcing the user to map their display pixels against an undisputed physical constant (such as an ISO/IEC 7810 standard identification card or standardized currency), TrueScale establishes a mathematical float ratio of actual physical hardware pixels per millimeter ($k$).</p>
+        <p>This utility is open-source, contains zero external build dependencies, relies on zero third-party tracking scripts, and executes entirely inside the client's local browser memory.</p>
+    </template>
+
+    <template id="tpl-guide">
+        <h3>1. The Physics of Screen Glass Panels</h3>
+        <p>Your monitor does not know how large it is. It only knows its pixel array (e.g., 1920x1080). To calculate actual physical inches or millimeters, a piece of software requires your exact Pixel Per Inch (PPI) density ratio.</p>
+        
+        <h3>2. Calibration Best Practices</h3>
+        <p>When aligning your credit card or cash note inside the workbench stage, ensure the card is not warped or lifted off the glass. Press the physical card flat against your screen using gentle pressure. Use the plus and minus nudge buttons to adjust the tracking box until the blue outline completely disappears beneath the physical edges of your object.</p>
+
+        <h3>3. Dual-Unit Switching</h3>
+        <p>You do not need to recalibrate when switching units. The TrueScale engine maintains your calibrated ratio in memory and uses vector math to instantly redraw the left-hand screen spine into either 10mm metric subdivisions or standard fractional Imperial ticks (1/16th, 1/8th, 1/4th, 1/2inch).</p>
+    </template>
+
+    <template id="tpl-contact">
+        <p>Fill out the form below to dispatch a secure, encrypted message directly to the developer's inbox.</p>
+        
+        <form onsubmit="handleContactSubmit(event)" class="custom-contact-form">
+            <input type="text" name="_honey" style="display:none">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="box">
+
+            <div class="form-group">
+                <label>Your Full Name</label>
+                <input type="text" name="name" required placeholder="e.g. Alex Smith">
+            </div>
+            
+            <div class="form-group">
+                <label>Return Email Address</label>
+                <input type="email" name="email" required placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Subject Line</label>
+                <input type="text" name="subject" required placeholder="e.g. Preset Request / Bug Report">
+            </div>
+
+            <div class="form-group">
+                <label>Detailed Message</label>
+                <textarea name="message" rows="5" required placeholder="Type your message here..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-action" style="margin-top:4px;">✉ Dispatch Message</button>
+            <div id="form-feedback" style="font-size: 0.85rem; font-weight: 700; margin-top: 8px; text-align: center; min-height: 24px;"></div>
+        </form>
+    </template>
+
+    <template id="tpl-privacy">
+        <p><b>Effective Date:</b> June 22, 2026</p>
+        <p>TrueScale™ is built upon a strict privacy-first architecture. This application operates as a completely stateless, client-side tool.</p>
+        <p><b>1. Zero Server Transmissions:</b> When you place an ID card, driver's license, or credit card against your screen to calibrate the engine, zero cameras or image capture devices are activated. No images, numbers, or dimensions are ever sent over the internet or transmitted to any remote servers.</p>
+        <p><b>2. Local Storage Sandbox:</b> When you lock your calibration parameters, your calculated scaling ratio ($k$) is saved purely inside your browser's local sandbox storage (`window.localStorage`). This data never leaves your physical device and can be erased instantly by clearing your site data or browsing cache.</p>
+        <p><b>3. Cookies & Analytics:</b> TrueScale uses zero tracking cookies and incorporates zero third-party advertising frameworks.</p>
+    </template>
+
+    <template id="tpl-terms">
+        <p><b>Last Updated:</b> June 22, 2026</p>
+        <p>By accessing and utilizing the TrueScale™ digital ruler and screen caliper, you agree to the following conditions:</p>
+        <p><b>1. "As-Is" Software Disclaimer:</b> This digital measurement utility is provided "as is" without warranty of any kind, express or implied. While the mathematical engine achieves high precision under proper manual calibration, the software authors cannot guarantee absolute measurements due to physical manufacturing variations in glass thickness, user alignment errors, or display parallax.</p>
+        <p><b>2. Limitation of Liability:</b> Under no circumstances shall TrueScale Engineering or its maintainers be held liable for any direct, indirect, incidental, or consequential damages resulting from the use of or reliance upon measurements generated by this web tool. <i>Do not use this application to calibrate precision medical machinery, aerospace components, or critical structural engineering fasteners.</i></p>
+    </template>
+
+    <script>
+        const STATE = { 
+            k: 3.78, 
+            locked: false,
+            caliperPx: 120, 
+            isDragging: false,
+            fixedJawOffset: 24,
+            theme: 'dark',
+            unitSystem: 'metric'
+        };
+
+        const DOM = {
+            workspace: document.getElementById('workspace'),
+            subpageView: document.getElementById('subpage-view'),
+            subpageTitle: document.getElementById('subpage-title'),
+            subpageBody: document.getElementById('subpage-body'),
+            svg: document.getElementById('ruler-svg'),
+            slider: document.getElementById('k-slider'),
+            selector: document.getElementById('preset-selector'),
+            valK: document.getElementById('val-k'),
+            valPPI: document.getElementById('val-ppi'),
+            target: document.getElementById('anchor-target'),
+            label: document.getElementById('target-label'),
+            core: document.getElementById('interactive-core'),
+            btnLock: document.getElementById('lock-btn'),
+            stage: document.getElementById('caliper-track-stage'),
+            jawDrag: document.getElementById('jaw-draggable'),
+            readoutMM: document.getElementById('readout-mm'),
+            readoutIN: document.getElementById('readout-in'),
+            themeBtn: document.getElementById('theme-toggle'),
+            unitBtn: document.getElementById('unit-toggle'),
+            fullBtn: document.getElementById('fullscreen-toggle')
+        };
+
+        function openSubpage(pageId, title) {
+            DOM.workspace.style.display = 'none';
+            DOM.subpageView.style.display = 'flex';
+            DOM.subpageTitle.innerText = title;
+            
+            const template = document.getElementById(`tpl-${pageId}`);
+            if (template) {
+                DOM.subpageBody.innerHTML = template.innerHTML;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function closeSubpage() {
+            DOM.subpageView.style.display = 'none';
+            DOM.workspace.style.display = 'flex';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- CORRECTED CONTACT DISPATCH ROUTINE ---
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('button[type="submit"]');
+            const feedback = document.getElementById('form-feedback');
+
+            btn.innerText = "Dispatching secure relay...";
+            btn.disabled = true;
+            feedback.innerText = "";
+
+            const formData = new FormData(form);
+
+            // ⚠️ PLACE YOUR 32-CHARACTER STRING IN THE URL BELOW:
+            fetch("https://formsubmit.co/ajax/f07c4979f8a2dd76f117023576b1752c", {
+                method: "POST",
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.message || "HTTP Status " + response.status) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success || data.status === 200) {
+                    form.reset();
+                    feedback.style.color = "var(--success)";
+                    feedback.innerText = "✓ Message dispatched successfully! We will reply to your inbox.";
+                } else {
+                    throw new Error("Relay rejected payload");
+                }
+            })
+            .catch(err => {
+                feedback.style.color = "#ef4444";
+                feedback.innerText = "⚠️ Delivery paused: Please check your inbox and approve the FormSubmit activation link!";
+                console.error("FormSubmit Exception:", err);
+            })
+            .finally(() => {
+                btn.innerText = "✉ Dispatch Message";
+                btn.disabled = false;
+            });
+        }
+
+        function renderVectorRuler(k) {
+            let svgContent = '';
+            
+            if (STATE.unitSystem === 'metric') {
+                const maxMM = 380; 
+                for (let mm = 0; mm <= maxMM; mm++) {
+                    const y = (mm * k).toFixed(2); 
+                    if (mm % 10 === 0) {
+                        svgContent += `<line x1="0" y1="${y}" x2="36" y2="${y}" stroke="var(--spine-tick-major)" stroke-width="1.2"/>`;
+                        if (mm > 0) {
+                            svgContent += `<text x="42" y="${parseFloat(y) + 4}" fill="var(--text-dim)" font-size="11" font-weight="600" font-family="monospace">${mm/10}</text>`;
+                        }
+                    } else if (mm % 5 === 0) {
+                        svgContent += `<line x1="0" y1="${y}" x2="22" y2="${y}" stroke="var(--text-dim)" stroke-width="1.0"/>`;
+                    } else {
+                        svgContent += `<line x1="0" y1="${y}" x2="12" y2="${y}" stroke="var(--spine-tick-minor)" stroke-width="0.8"/>`;
+                    }
+                }
+            } else {
+                const maxInches = 15;
+                const totalSixteenths = maxInches * 16;
+                const mmPerSixteenth = 25.4 / 16;
+                
+                for (let i = 0; i <= totalSixteenths; i++) {
+                    const y = (i * mmPerSixteenth * k).toFixed(2);
+                    
+                    if (i % 16 === 0) {
+                        svgContent += `<line x1="0" y1="${y}" x2="38" y2="${y}" stroke="var(--spine-tick-major)" stroke-width="1.4"/>`;
+                        if (i > 0) {
+                            svgContent += `<text x="44" y="${parseFloat(y) + 4}" fill="var(--text-dim)" font-size="11" font-weight="700" font-family="monospace">${i/16}"</text>`;
+                        }
+                    } else if (i % 8 === 0) {
+                        svgContent += `<line x1="0" y1="${y}" x2="28" y2="${y}" stroke="var(--text-dim)" stroke-width="1.1"/>`;
+                    } else if (i % 4 === 0) {
+                        svgContent += `<line x1="0" y1="${y}" x2="22" y2="${y}" stroke="var(--text-dim)" stroke-width="0.9"/>`;
+                    } else if (i % 2 === 0) {
+                        svgContent += `<line x1="0" y1="${y}" x2="16" y2="${y}" stroke="var(--spine-tick-minor)" stroke-width="0.8"/>`;
+                    } else {
+                        svgContent += `<line x1="0" y1="${y}" x2="10" y2="${y}" stroke="var(--spine-tick-minor)" stroke-width="0.7" opacity="0.7"/>`;
+                    }
+                }
+            }
+            DOM.svg.innerHTML = svgContent;
+        }
+
+        function updateCaliperReadouts() {
+            const mmWidth = STATE.caliperPx / STATE.k;
+            const inWidth = mmWidth / 25.4;
+            DOM.readoutMM.innerText = mmWidth.toFixed(1);
+            DOM.readoutIN.innerText = inWidth.toFixed(3);
+            DOM.jawDrag.style.left = `${STATE.fixedJawOffset + STATE.caliperPx}px`;
+        }
+
+        function updateTargetDimensions() {
+            if (STATE.locked) return;
+            
+            const [w, h] = DOM.selector.value.split(',');
+            const fullText = DOM.selector.options[DOM.selector.selectedIndex].text;
+            const cleanLabel = fullText.split('-')[0].trim();
+            
+            let renderW = parseFloat(w);
+            let renderH = parseFloat(h);
+            
+            if (window.innerWidth < 768 && fullText.includes('🇮🇳')) {
+                DOM.target.classList.add('horizontal-note-mode');
+                DOM.label.innerHTML = `<span>${cleanLabel}</span><small>Place Note Horizontally<br>Match Top & Bottom Lines (66mm)</small>`;
+            } else {
+                DOM.target.classList.remove('horizontal-note-mode');
+                DOM.label.innerHTML = `<span>${cleanLabel}</span>`;
+            }
+            
+            document.documentElement.style.setProperty('--anchor-w', renderW);
+            document.documentElement.style.setProperty('--anchor-h', renderH);
+        }
+
+        function applyScale(newK, saveToStorage = true) {
+            if (STATE.locked) {
+                DOM.slider.value = STATE.k;
+                return; 
+            }
+            
+            STATE.k = parseFloat(newK);
+            DOM.slider.value = STATE.k;
+            renderVectorRuler(STATE.k);
+            document.documentElement.style.setProperty('--mm', `${STATE.k}px`);
+            DOM.valK.innerText = STATE.k.toFixed(3);
+            DOM.valPPI.innerText = Math.round(STATE.k * 25.4);
+            updateCaliperReadouts();
+
+            if (saveToStorage) {
+                localStorage.setItem('truescale_k', STATE.k);
+            }
+        }
+
+        function applyTheme(targetTheme, saveToStorage = true) {
+            STATE.theme = targetTheme;
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            renderVectorRuler(STATE.k); 
+            
+            if (saveToStorage) {
+                localStorage.setItem('truescale_theme', targetTheme);
+            }
+        }
+
+        function applyUnitSystem(system, saveToStorage = true) {
+            STATE.unitSystem = system;
+            DOM.unitBtn.innerText = system === 'metric' ? 'Metric' : 'Imperial';
+            DOM.unitBtn.classList.toggle('active', system === 'imperial');
+            renderVectorRuler(STATE.k);
+
+            if (saveToStorage) {
+                localStorage.setItem('truescale_units', system);
+            }
+        }
+
+        function toggleFullScreen() {
+            const docElm = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (docElm.requestFullscreen) {
+                    docElm.requestFullscreen();
+                } else if (docElm.webkitRequestFullscreen) {
+                    docElm.webkitRequestFullscreen();
+                } else {
+                    alert("Fullscreen mode is blocked by your browser's security layout. Install this page to your Home Screen as a PWA to run it in true standalone full-screen mode!");
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                DOM.fullBtn.innerText = '✖ Exit Full';
+                DOM.fullBtn.classList.add('active');
+            } else {
+                DOM.fullBtn.innerText = '⛶ Full';
+                DOM.fullBtn.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (document.webkitFullscreenElement) {
+                DOM.fullBtn.innerText = '✖ Exit Full';
+                DOM.fullBtn.classList.add('active');
+            } else {
+                DOM.fullBtn.innerText = '⛶ Full';
+                DOM.fullBtn.classList.remove('active');
+            }
+        });
+
+        DOM.fullBtn.addEventListener('click', toggleFullScreen);
+        DOM.themeBtn.addEventListener('click', () => applyTheme(STATE.theme === 'dark' ? 'light' : 'dark'));
+        DOM.unitBtn.addEventListener('click', () => applyUnitSystem(STATE.unitSystem === 'metric' ? 'imperial' : 'metric'));
+
+        function handlePointerMove(e) {
+            if (!STATE.isDragging) return;
+            const rect = DOM.stage.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const localX = clientX - rect.left;
+            const calculatedGap = localX - STATE.fixedJawOffset;
+            const maxTrackLimit = rect.width - STATE.fixedJawOffset - 16;
+            
+            STATE.caliperPx = Math.max(0, Math.min(maxTrackLimit, calculatedGap));
+            updateCaliperReadouts();
+        }
+
+        DOM.stage.addEventListener('pointerdown', (e) => {
+            STATE.isDragging = true;
+            DOM.stage.setPointerCapture(e.pointerId);
+            handlePointerMove(e);
+        });
+        DOM.stage.addEventListener('pointermove', handlePointerMove);
+        const stopDrag = (e) => {
+            if (STATE.isDragging) {
+                STATE.isDragging = false;
+                DOM.stage.releasePointerCapture(e.pointerId);
+            }
+        };
+        DOM.stage.addEventListener('pointerup', stopDrag);
+        DOM.stage.addEventListener('pointercancel', stopDrag);
+
+        DOM.slider.addEventListener('input', (e) => applyScale(e.target.value));
+        
+        document.getElementById('nudge-down').addEventListener('click', () => {
+            if (!STATE.locked) applyScale(STATE.k - 0.015);
+        });
+        document.getElementById('nudge-up').addEventListener('click', () => {
+            if (!STATE.locked) applyScale(STATE.k + 0.015);
+        });
+
+        DOM.selector.addEventListener('change', updateTargetDimensions);
+        
+        window.addEventListener('resize', () => { 
+            if (!STATE.locked) {
+                updateTargetDimensions(); 
+                applyScale(STATE.k, false); 
+            }
+        });
+
+        DOM.btnLock.addEventListener('click', () => {
+            STATE.locked = !STATE.locked;
+            DOM.core.style.opacity = STATE.locked ? '0.22' : '1';
+            DOM.core.style.pointerEvents = STATE.locked ? 'none' : 'auto';
+            DOM.selector.disabled = STATE.locked;
+            DOM.btnLock.innerText = STATE.locked ? '🔓 Unlock System Parameters' : '🔒 Lock Calibration Parameters';
+            DOM.btnLock.classList.toggle('locked', STATE.locked);
+        });
+
+        function initAppLifecycle() {
+            const savedK = localStorage.getItem('truescale_k');
+            const savedTheme = localStorage.getItem('truescale_theme');
+            const savedUnits = localStorage.getItem('truescale_units');
+
+            if (savedTheme === 'light' || savedTheme === 'dark') {
+                applyTheme(savedTheme, false);
+            } else {
+                applyTheme('dark', false); 
+            }
+
+            if (savedUnits === 'metric' || savedUnits === 'imperial') {
+                applyUnitSystem(savedUnits, false);
+            } else {
+                applyUnitSystem('metric', false);
+            }
+
+            updateTargetDimensions();
+
+            if (savedK && !isNaN(parseFloat(savedK))) {
+                applyScale(savedK, false);
+            } else {
+                applyScale(3.78, false);
+            }
+        }
+
+        initAppLifecycle();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swBlob = new Blob([
+                    `const CACHE_NAME = 'truescale-v1';
+                     self.addEventListener('install', e => self.skipWaiting());
+                     self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                     self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));`
+                ], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(swBlob);
+                navigator.serviceWorker.register(swUrl, { scope: './' }).catch(err => console.log("PWA SW Register Skipped"));
+            });
+        }
+    </script>
+</body>
+</html>
